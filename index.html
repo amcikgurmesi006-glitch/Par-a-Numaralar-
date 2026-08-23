@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0f15">
+<title>Ortak Parça Arşivi</title>
+<style>
+:root{
+  --bg:#0b0e13;--panel:#141923;--panel2:#1a202b;--line:#2a3342;
+  --text:#f5f7fb;--muted:#8e9aad;--accent:#ffb83e;--accent2:#ff8b38;
+  --green:#45d18b;--red:#ff687a;--blue:#65aaff;--radius:18px
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Inter,Segoe UI,Arial,sans-serif;background:#0b0e13;color:var(--text)}
+body{
+  background:
+    radial-gradient(circle at 10% -10%,rgba(255,184,62,.12),transparent 28%),
+    radial-gradient(circle at 100% 0,rgba(101,170,255,.08),transparent 26%),
+    #0b0e13;
+}
+button,input{font:inherit}
+button{color:inherit}
+.app{max-width:1220px;margin:auto;padding:28px 24px 110px}
+.header{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:22px}
+.eyebrow{color:var(--accent);font-size:10px;letter-spacing:1.7px;font-weight:900;text-transform:uppercase}
+h1{font-size:30px;line-height:1.1;margin:7px 0 7px;letter-spacing:-.6px}
+.subtitle{color:var(--muted);font-size:13px}
+.header-actions{display:flex;gap:9px;flex-wrap:wrap;justify-content:flex-end}
+.btn{
+  min-height:42px;border:1px solid var(--line);border-radius:12px;background:#171d27;
+  padding:0 13px;cursor:pointer;font-size:12px;font-weight:800;display:inline-flex;
+  align-items:center;justify-content:center;gap:8px
+}
+.btn:hover{background:#202735;border-color:#3a465a}
+.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent;color:#1d1307}
+.btn.red{color:#ff9dab}
+.btn svg{width:16px;height:16px}
+.status{
+  display:inline-flex;align-items:center;gap:7px;margin-top:10px;padding:6px 9px;border-radius:999px;
+  background:#121821;border:1px solid #232b39;color:#8c98ab;font-size:10px;font-weight:800
+}
+.dot{width:7px;height:7px;border-radius:50%;background:#677386}
+.status.online .dot{background:var(--green);box-shadow:0 0 0 4px rgba(69,209,139,.08)}
+.status.error .dot{background:var(--red)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
+.stat{border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,#161c26,#111720);padding:15px}
+.stat span{font-size:9px;color:#7d899c;letter-spacing:1.1px;text-transform:uppercase}
+.stat strong{display:block;font-size:24px;margin-top:7px}
+.stat:nth-child(1) strong{color:var(--accent)}
+.stat:nth-child(2) strong{color:var(--green)}
+.stat:nth-child(3) strong{color:var(--blue)}
+.panel{background:linear-gradient(180deg,#151a24,#10151d);border:1px solid var(--line);border-radius:19px;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.25)}
+.toolbar{display:flex;gap:10px;align-items:center;padding:13px;border-bottom:1px solid #222a37}
+.search-wrap{flex:1;position:relative}
+.search-wrap svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:17px;color:#687589}
+.search{
+  width:100%;height:44px;border-radius:12px;background:#0e131a;border:1px solid var(--line);
+  color:#fff;padding:0 14px 0 40px;outline:none
+}
+.search:focus{border-color:#53617a;box-shadow:0 0 0 3px rgba(101,170,255,.07)}
+.meta{font-size:10px;color:#7d899b;white-space:nowrap}
+.table-wrap{overflow:auto;max-height:calc(100vh - 315px)}
+table{width:100%;border-collapse:collapse;min-width:720px}
+th{position:sticky;top:0;background:#151b24;z-index:2;padding:12px 15px;text-align:left;font-size:9px;color:#738096;text-transform:uppercase;letter-spacing:1.1px;border-bottom:1px solid var(--line)}
+td{padding:12px 15px;border-bottom:1px solid #202734;font-size:12px}
+tr:hover td{background:rgba(255,255,255,.018)}
+.idx{color:#536074;width:52px}
+.code{font-family:Consolas,ui-monospace,monospace;color:#fff;font-size:13px;font-weight:900;letter-spacing:.2px}
+.name{color:#c2cbd7}
+.actions{display:flex;gap:5px;justify-content:flex-end}
+.icon{
+  width:34px;height:34px;border-radius:9px;border:1px solid transparent;background:transparent;
+  display:grid;place-items:center;cursor:pointer;color:#7e8a9c
+}
+.icon:hover{background:#202836;border-color:#303a4c;color:#fff}
+.icon.delete:hover{color:#ff8a99;background:rgba(255,104,122,.07);border-color:rgba(255,104,122,.22)}
+.icon svg{width:15px;height:15px}
+.empty{text-align:center;padding:50px 18px;color:#7c899b;font-size:12px}
+.sync-note{padding:10px 13px;border-top:1px solid #202734;color:#657286;font-size:9px;display:flex;justify-content:space-between;gap:10px}
+.mobile-bar{display:none}
+
+.modal{display:none;position:fixed;inset:0;background:rgba(3,6,10,.74);backdrop-filter:blur(7px);z-index:100;padding:18px;place-items:center}
+.modal.open{display:grid}
+.dialog{width:min(500px,100%);background:linear-gradient(180deg,#1a202b,#111720);border:1px solid #344052;border-radius:21px;overflow:hidden;box-shadow:0 35px 100px rgba(0,0,0,.55)}
+.dialog-head{padding:19px 20px 14px;border-bottom:1px solid #252e3c;display:flex;justify-content:space-between;gap:12px}
+.dialog-head h2{font-size:18px;margin:0}
+.dialog-head p{font-size:10px;color:var(--muted);margin:4px 0 0;line-height:1.4}
+.close{width:32px;height:32px;border:0;border-radius:9px;background:#222a36;color:#8491a4;font-size:20px;cursor:pointer}
+.dialog-body{padding:19px 20px}
+.field{margin-bottom:15px}
+.field label{display:block;font-size:9px;font-weight:900;letter-spacing:1.1px;text-transform:uppercase;color:#8491a5;margin-bottom:7px}
+.field input{width:100%;height:47px;border-radius:12px;border:1px solid var(--line);background:#0e131a;color:#fff;padding:0 13px;outline:none}
+.field input:focus{border-color:#56647c}
+.hint{font-size:9px;color:#647186;line-height:1.45;margin-top:6px}
+.dialog-foot{display:flex;justify-content:flex-end;gap:8px;padding:0 20px 20px}
+.sep{height:1px;background:#252d3a;margin:18px 0}
+.section-title{font-size:11px;font-weight:900;color:#e6ebf3;margin:0 0 10px}
+.config-good{font-size:10px;color:#8edbb3;margin-top:6px}
+.toast{
+  position:fixed;right:20px;bottom:20px;z-index:200;background:#171e28;border:1px solid #344054;
+  border-radius:12px;padding:11px 13px;box-shadow:0 18px 60px rgba(0,0,0,.4);
+  font-size:11px;opacity:0;transform:translateY(10px);pointer-events:none;transition:.2s
+}
+.toast.show{opacity:1;transform:none}
+.toast.error{border-color:rgba(255,104,122,.38);color:#ffc1ca}
+.badge{font-family:Inter,Segoe UI,sans-serif;font-size:8px;color:#ffc968;border:1px solid rgba(255,184,62,.18);background:rgba(255,184,62,.08);padding:2px 5px;border-radius:6px;margin-left:6px}
+@media(max-width:720px){
+  .app{padding:17px 10px 100px}
+  .header{display:block;margin-bottom:16px}
+  .header-actions{display:none}
+  h1{font-size:24px}
+  .subtitle{font-size:11px;line-height:1.45}
+  .stats{gap:7px}
+  .stat{padding:11px 9px;border-radius:13px}
+  .stat span{font-size:7px;letter-spacing:.65px}
+  .stat strong{font-size:20px;margin-top:5px}
+  .toolbar{padding:9px;flex-wrap:wrap}
+  .search-wrap{width:100%;flex-basis:100%}
+  .search{height:48px;font-size:16px}
+  .meta{flex:1}
+  .table-wrap{max-height:none;overflow:visible}
+  table{display:block;min-width:0}
+  thead{display:none}
+  tbody{display:block;padding:8px}
+  tr{display:grid;grid-template-columns:1fr auto;gap:5px 8px;padding:13px 11px;margin-bottom:8px;border:1px solid var(--line);border-radius:14px;background:#121821}
+  td{border:0;padding:0;display:block}
+  td.idx{display:none}
+  td.code{grid-column:1;font-size:15px}
+  td.name{grid-column:1;font-size:12px;line-height:1.4}
+  td:last-child{grid-column:2;grid-row:1/3;align-self:center}
+  .icon{width:43px;height:43px;border:1px solid #303a4b;background:#1a212d;border-radius:12px;color:#c2ccda}
+  .icon.delete{color:#ff8d9b}
+  .icon svg{width:18px;height:18px}
+  .sync-note{font-size:8px;padding:9px 10px}
+  .mobile-bar{
+    display:grid;grid-template-columns:1fr 1fr 62px;gap:4px;position:fixed;left:9px;right:9px;bottom:9px;z-index:60;
+    padding:7px;padding-bottom:calc(7px + env(safe-area-inset-bottom));border:1px solid #303a4b;border-radius:18px;
+    background:rgba(18,23,32,.95);backdrop-filter:blur(18px);box-shadow:0 20px 70px rgba(0,0,0,.48)
+  }
+  .mob-action{border:0;background:transparent;border-radius:11px;color:#b3bfce;font-size:9px;font-weight:900;min-height:52px;display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center}
+  .mob-action svg{width:19px;height:19px}
+  .mob-add{width:54px;height:54px;border:0;border-radius:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#1b1207;display:grid;place-items:center;align-self:center;justify-self:end}
+  .mob-add svg{width:25px;height:25px}
+  .modal{padding:0;align-items:end}
+  .dialog{border-radius:20px 20px 0 0;width:100%}
+  .dialog-body{padding:17px 16px}
+  .dialog-head{padding:17px 16px 13px}
+  .dialog-foot{padding:0 16px calc(16px + env(safe-area-inset-bottom))}
+  .dialog-foot .btn{flex:1;min-height:48px}
+  .field input{height:52px;font-size:16px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="header">
+    <div>
+      <div class="eyebrow">Canlı Ortak Veritabanı</div>
+      <h1>Ortak Parça Arşivi</h1>
+      <div class="subtitle">Aynı linki açan herkes aynı güncel parça listesini görür.</div>
+      <div class="status" id="status"><span class="dot"></span><span id="statusText">Bağlantı bekleniyor</span></div>
+    </div>
+    <div class="header-actions">
+      <button class="btn" id="shareBtn">Bağlantıyı Paylaş</button>
+      <button class="btn" id="exportBtn">TXT İndir</button>
+      <button class="btn" id="settingsBtn">Ayarlar</button>
+      <button class="btn primary" id="addBtn">+ Yeni Parça</button>
+    </div>
+  </header>
+
+  <section class="stats">
+    <div class="stat"><span>Toplam Kayıt</span><strong id="totalStat">0</strong></div>
+    <div class="stat"><span>Benzersiz Numara</span><strong id="uniqueStat">0</strong></div>
+    <div class="stat"><span>Çift Numara</span><strong id="dupStat">0</strong></div>
+  </section>
+
+  <section class="panel">
+    <div class="toolbar">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.7-3.7"/></svg>
+        <input class="search" id="search" placeholder="Parça numarası veya parça adı ara..." autocomplete="off">
+      </div>
+      <div class="meta" id="resultMeta">0 kayıt</div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Parça Numarası</th><th>Parça Adı</th><th style="text-align:right">İşlem</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div class="empty" id="empty">Henüz kayıt yok.</div>
+    </div>
+    <div class="sync-note"><span>Liste otomatik yenilenir.</span><span id="lastSync">Henüz senkronize edilmedi</span></div>
+  </section>
+</div>
+
+<div class="mobile-bar">
+  <button class="mob-action" id="mobShare">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4"/></svg>
+    PAYLAŞ
+  </button>
+  <button class="mob-action" id="mobSettings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4v-.2a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3A1.7 1.7 0 0 0 10 3V2.8h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1z"/></svg>
+    AYARLAR
+  </button>
+  <button class="mob-add" id="mobAdd" aria-label="Yeni parça">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+</div>
+
+<!-- Parça modal -->
+<div class="modal" id="partModal">
+  <div class="dialog">
+    <div class="dialog-head">
+      <div><h2 id="partModalTitle">Yeni Parça</h2><p>Değişiklikler ortak veritabanına kaydedilir.</p></div>
+      <button class="close" data-close="partModal">&times;</button>
+    </div>
+    <form id="partForm">
+      <div class="dialog-body">
+        <div class="field"><label>Parça Numarası</label><input id="partNumber" required maxlength="80" placeholder="36.25913-6005"></div>
+        <div class="field"><label>Parça Adı</label><input id="partName" required maxlength="200" placeholder="Trafo"></div>
+        <div class="field"><label>Düzenleme Kodu</label><input id="editCode" type="password" inputmode="numeric" required placeholder="Ortak düzenleme kodu"><div class="hint">İlk kurulum kodu 2468. Ayarlardan değiştirilebilir.</div></div>
+      </div>
+      <div class="dialog-foot"><button type="button" class="btn" data-close="partModal">Vazgeç</button><button class="btn primary" type="submit">Kaydet</button></div>
+    </form>
+  </div>
+</div>
+
+<!-- Silme modal -->
+<div class="modal" id="deleteModal">
+  <div class="dialog">
+    <div class="dialog-head">
+      <div><h2>Parçayı Sil</h2><p id="deleteText">Bu kayıt ortak listeden silinecek.</p></div>
+      <button class="close" data-close="deleteModal">&times;</button>
+    </div>
+    <form id="deleteForm">
+      <div class="dialog-body">
+        <div class="field"><label>Düzenleme Kodu</label><input id="deleteCode" type="password" inputmode="numeric" required placeholder="Düzenleme kodu"></div>
+      </div>
+      <div class="dialog-foot"><button type="button" class="btn" data-close="deleteModal">Vazgeç</button><button class="btn red" type="submit">Sil</button></div>
+    </form>
+  </div>
+</div>
+
+<!-- Ayarlar / bağlantı modal -->
+<div class="modal" id="settingsModal">
+  <div class="dialog">
+    <div class="dialog-head">
+      <div><h2>Bağlantı ve Ayarlar</h2><p>Supabase proje bilgileri burada saklanır.</p></div>
+      <button class="close" data-close="settingsModal">&times;</button>
+    </div>
+    <div class="dialog-body">
+      <form id="configForm">
+        <div class="field">
+          <label>Supabase Project URL</label>
+          <input id="projectUrl" type="url" placeholder="https://xxxx.supabase.co" required>
+        </div>
+        <div class="field">
+          <label>Publishable Key</label>
+          <input id="publishableKey" type="text" placeholder="sb_publishable_..." required>
+          <div class="hint">Secret / service_role anahtarını buraya kesinlikle yazma.</div>
+        </div>
+        <button class="btn primary" style="width:100%" type="submit">Bağlantıyı Kaydet ve Test Et</button>
+      </form>
+
+      <div class="sep"></div>
+      <div class="section-title">Ortak Link</div>
+      <div class="hint">Siteyi internete yükledikten sonra bu buton, proje bağlantısını linke ekler. Linki alan cihaz otomatik bağlanır.</div>
+      <button class="btn" style="width:100%;margin-top:9px" id="copyConfiguredLink">Ortak Bağlantıyı Kopyala</button>
+
+      <div class="sep"></div>
+      <div class="section-title">Düzenleme Kodunu Değiştir</div>
+      <form id="codeForm">
+        <div class="field"><label>Eski Kod</label><input id="oldCode" type="password" inputmode="numeric" required></div>
+        <div class="field"><label>Yeni Kod</label><input id="newCode" type="password" inputmode="numeric" required minlength="4"></div>
+        <button class="btn" style="width:100%" type="submit">Düzenleme Kodunu Değiştir</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const CONFIG_KEY="ortak_parca_supabase_v1";
+let cfg={url:"",key:""};
+let parts=[];
+let editingId=null;
+let deletingId=null;
+let refreshing=false;
+let pollTimer=null;
+
+const $=id=>document.getElementById(id);
+const ICONS={
+  copy:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>`,
+  edit:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m4 20 4.4-1 9.8-9.8a2.1 2.1 0 0 0-3-3L5.4 16z"/><path d="m13.8 7.6 3 3"/></svg>`,
+  del:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13"/><path d="M10 11v5M14 11v5"/></svg>`
+};
+
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function norm(s){return String(s??"").toLocaleLowerCase("tr-TR").trim()}
+function openModal(id){$(id).classList.add("open")}
+function closeModal(id){$(id).classList.remove("open")}
+function toast(msg,error=false){
+  const t=$("toast"); t.textContent=msg; t.className="toast show"+(error?" error":"");
+  clearTimeout(window.__t); window.__t=setTimeout(()=>t.className="toast",2300);
+}
+function setStatus(type,text){
+  $("status").className="status "+type;
+  $("statusText").textContent=text;
+}
+function saveCfg(){localStorage.setItem(CONFIG_KEY,JSON.stringify(cfg))}
+function b64urlEncode(obj){
+  const bytes=new TextEncoder().encode(JSON.stringify(obj));
+  let bin=""; bytes.forEach(b=>bin+=String.fromCharCode(b));
+  return btoa(bin).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+function b64urlDecode(s){
+  try{
+    s=s.replace(/-/g,"+").replace(/_/g,"/");
+    while(s.length%4)s+="=";
+    const bin=atob(s); const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));
+    return JSON.parse(new TextDecoder().decode(bytes));
+  }catch{return null}
+}
+function loadCfg(){
+  const h=location.hash.match(/(?:^#|&)cfg=([^&]+)/);
+  if(h){
+    const fromLink=b64urlDecode(h[1]);
+    if(fromLink?.url&&fromLink?.key){
+      cfg={url:fromLink.url.replace(/\/+$/,""),key:fromLink.key};
+      saveCfg();
+    }
+  }
+  if(!cfg.url){
+    try{
+      const saved=JSON.parse(localStorage.getItem(CONFIG_KEY)||"{}");
+      if(saved.url&&saved.key)cfg={url:saved.url.replace(/\/+$/,""),key:saved.key};
+    }catch{}
+  }
+}
+function headers(extra={}){
+  return {"apikey":cfg.key,"Content-Type":"application/json",...extra};
+}
+async function api(path,opts={}){
+  if(!cfg.url||!cfg.key)throw new Error("NO_CONFIG");
+  const r=await fetch(cfg.url+"/rest/v1/"+path,{...opts,headers:{...headers(),...(opts.headers||{})}});
+  const txt=await r.text();
+  let body=null; try{body=txt?JSON.parse(txt):null}catch{body=txt}
+  if(!r.ok){
+    const msg=body?.message||body?.hint||body?.details||String(body||r.status);
+    const e=new Error(msg); e.status=r.status; e.body=body; throw e;
+  }
+  return body;
+}
+async function refresh(silent=false){
+  if(refreshing||!cfg.url||!cfg.key)return;
+  refreshing=true;
+  if(!silent)setStatus("","Bağlanıyor...");
+  try{
+    const data=await api("parts?select=id,part_number,part_name,created_at,updated_at&order=id.desc");
+    parts=Array.isArray(data)?data:[];
+    render();
+    const now=new Date();
+    $("lastSync").textContent="Son senkron: "+now.toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+    setStatus("online","Ortak veritabanı bağlı");
+  }catch(e){
+    setStatus("error","Bağlantı hatası");
+    if(!silent)toast("Bağlantı kurulamadı: "+friendlyError(e),true);
+  }finally{refreshing=false}
+}
+function friendlyError(e){
+  const m=String(e?.message||e);
+  if(m.includes("INVALID_EDIT_CODE"))return "Düzenleme kodu yanlış.";
+  if(m.includes("duplicate key"))return "Bu parça numarası ve adı zaten kayıtlı.";
+  if(m.includes("NO_CONFIG"))return "Supabase bağlantısı ayarlanmamış.";
+  if(m.includes("Failed to fetch"))return "Sunucuya ulaşılamadı. URL veya internet bağlantısını kontrol et.";
+  return m;
+}
+function render(){
+  const q=norm($("search").value);
+  const shown=parts.filter(p=>!q||norm(p.part_number).includes(q)||norm(p.part_name).includes(q));
+  const counts={}; parts.forEach(p=>counts[p.part_number]=(counts[p.part_number]||0)+1);
+  $("totalStat").textContent=parts.length;
+  $("uniqueStat").textContent=new Set(parts.map(p=>p.part_number)).size;
+  $("dupStat").textContent=parts.filter(p=>counts[p.part_number]>1).length;
+  $("resultMeta").textContent=shown.length===parts.length?`${parts.length} kayıt`:`${shown.length} / ${parts.length} sonuç`;
+  $("empty").style.display=shown.length?"none":"block";
+  $("tbody").innerHTML=shown.map((p,i)=>`
+    <tr>
+      <td class="idx">${String(i+1).padStart(2,"0")}</td>
+      <td class="code">${esc(p.part_number)}${counts[p.part_number]>1?`<span class="badge">${counts[p.part_number]} kayıt</span>`:""}</td>
+      <td class="name">${esc(p.part_name)}</td>
+      <td><div class="actions">
+        <button class="icon" title="Numarayı kopyala" onclick="copyPart(${p.id})">${ICONS.copy}</button>
+        <button class="icon" title="Düzenle" onclick="editPart(${p.id})">${ICONS.edit}</button>
+        <button class="icon delete" title="Sil" onclick="askDelete(${p.id})">${ICONS.del}</button>
+      </div></td>
+    </tr>`).join("");
+}
+async function copyPart(id){
+  const p=parts.find(x=>x.id===id); if(!p)return;
+  try{await navigator.clipboard.writeText(p.part_number);toast("Parça numarası kopyalandı")}
+  catch{toast(p.part_number)}
+}
+function addPart(){
+  editingId=null;$("partModalTitle").textContent="Yeni Parça";
+  $("partForm").reset();
+  const remembered=sessionStorage.getItem("editCode"); if(remembered)$("editCode").value=remembered;
+  openModal("partModal"); setTimeout(()=>$("partNumber").focus(),80);
+}
+function editPart(id){
+  const p=parts.find(x=>x.id===id); if(!p)return;
+  editingId=id;$("partModalTitle").textContent="Parçayı Düzenle";
+  $("partNumber").value=p.part_number;$("partName").value=p.part_name;
+  $("editCode").value=sessionStorage.getItem("editCode")||"";
+  openModal("partModal");
+}
+function askDelete(id){
+  const p=parts.find(x=>x.id===id); if(!p)return;
+  deletingId=id;$("deleteText").textContent=`${p.part_number} - ${p.part_name}`;
+  $("deleteCode").value=sessionStorage.getItem("editCode")||"";
+  openModal("deleteModal");
+}
+async function rpc(name,payload){
+  return api("rpc/"+name,{method:"POST",body:JSON.stringify(payload)});
+}
+$("partForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const code=$("editCode").value.trim(), number=$("partNumber").value.trim(), name=$("partName").value.trim();
+  sessionStorage.setItem("editCode",code);
+  try{
+    if(editingId){
+      await rpc("part_update",{p_id:editingId,p_number:number,p_name:name,p_edit_code:code});
+      toast("Parça güncellendi");
+    }else{
+      await rpc("part_add",{p_number:number,p_name:name,p_edit_code:code});
+      toast("Yeni parça ortak listeye eklendi");
+    }
+    closeModal("partModal");await refresh(true);
+  }catch(err){toast(friendlyError(err),true)}
+});
+$("deleteForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const code=$("deleteCode").value.trim();sessionStorage.setItem("editCode",code);
+  try{
+    await rpc("part_delete",{p_id:deletingId,p_edit_code:code});
+    closeModal("deleteModal");toast("Parça ortak listeden silindi");await refresh(true);
+  }catch(err){toast(friendlyError(err),true)}
+});
+$("configForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  cfg={url:$("projectUrl").value.trim().replace(/\/+$/,""),key:$("publishableKey").value.trim()};
+  saveCfg();
+  await refresh();
+  if($("status").classList.contains("online"))toast("Bağlantı kaydedildi");
+});
+$("codeForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  try{
+    await rpc("change_edit_code",{p_old_code:$("oldCode").value,p_new_code:$("newCode").value});
+    sessionStorage.setItem("editCode",$("newCode").value);
+    $("codeForm").reset();toast("Düzenleme kodu değiştirildi");
+  }catch(err){toast(friendlyError(err),true)}
+});
+function openSettings(){
+  $("projectUrl").value=cfg.url||"";
+  $("publishableKey").value=cfg.key||"";
+  openModal("settingsModal");
+}
+async function shareLink(){
+  if(!cfg.url||!cfg.key){openSettings();toast("Önce Supabase bağlantısını kaydet",true);return}
+  if(location.protocol==="file:"){
+    toast("Önce index.html dosyasını bir web hostuna yükle.",true);return;
+  }
+  const u=new URL(location.href);u.hash="cfg="+b64urlEncode(cfg);
+  try{
+    if(navigator.share){await navigator.share({title:"Ortak Parça Arşivi",url:u.toString()})}
+    else{await navigator.clipboard.writeText(u.toString());toast("Ortak link kopyalandı")}
+  }catch(e){
+    if(e?.name!=="AbortError"){try{await navigator.clipboard.writeText(u.toString());toast("Ortak link kopyalandı")}catch{}}
+  }
+}
+async function copyConfiguredLink(){
+  if(!cfg.url||!cfg.key){toast("Önce bağlantıyı kaydet",true);return}
+  if(location.protocol==="file:"){toast("Bu dosya önce internete yüklenmeli.",true);return}
+  const u=new URL(location.href);u.hash="cfg="+b64urlEncode(cfg);
+  try{await navigator.clipboard.writeText(u.toString());toast("Ortak bağlantı kopyalandı")}catch{toast("Kopyalama başarısız",true)}
+}
+function exportTxt(){
+  const text="Parça Numaraları\n\n"+parts.map(p=>`${p.part_number} = ${p.part_name}`).join("\n");
+  const b=new Blob(["\ufeff",text],{type:"text/plain;charset=utf-8"}),u=URL.createObjectURL(b),a=document.createElement("a");
+  a.href=u;a.download="parca-numaralari.txt";a.click();setTimeout(()=>URL.revokeObjectURL(u),500);
+}
+$("search").addEventListener("input",render);
+$("addBtn").onclick=addPart;$("mobAdd").onclick=addPart;
+$("settingsBtn").onclick=openSettings;$("mobSettings").onclick=openSettings;
+$("shareBtn").onclick=shareLink;$("mobShare").onclick=shareLink;
+$("copyConfiguredLink").onclick=copyConfiguredLink;
+$("exportBtn").onclick=exportTxt;
+document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>closeModal(b.dataset.close));
+document.querySelectorAll(".modal").forEach(m=>m.addEventListener("mousedown",e=>{if(e.target===m)closeModal(m.id)}));
+document.addEventListener("keydown",e=>{if(e.key==="Escape")document.querySelectorAll(".modal.open").forEach(m=>closeModal(m.id))});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)refresh(true)});
+
+loadCfg();
+if(cfg.url&&cfg.key){
+  refresh();
+}else{
+  setStatus("","Kurulum gerekli");
+  setTimeout(()=>openSettings(),250);
+}
+pollTimer=setInterval(()=>{if(!document.hidden)refresh(true)},3000);
+</script>
+</body>
+</html>
