@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0e14">
+<title>Parça Arşivi</title>
+<style>
+:root{--bg:#090d13;--panel:#131923;--panel2:#19212d;--line:#293344;--text:#f4f7fb;--muted:#8492a7;--accent:#ffb743;--accent2:#ff8c38;--green:#45d28b;--red:#ff687b;--blue:#68aaff}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Inter,Segoe UI,Arial,sans-serif;background:#090d13;color:var(--text)}
+body{background:radial-gradient(circle at 8% -8%,rgba(255,183,67,.12),transparent 28%),radial-gradient(circle at 100% 0,rgba(104,170,255,.07),transparent 26%),#090d13}
+button,input{font:inherit}button{color:inherit}
+.hidden{display:none!important}
+.login-screen{position:fixed;inset:0;z-index:500;display:grid;place-items:center;padding:18px;background:radial-gradient(circle at 50% 10%,rgba(255,183,67,.10),transparent 35%),#090d13}
+.login-card{width:min(430px,100%);border:1px solid #303a4b;border-radius:25px;background:linear-gradient(180deg,#171e29,#101620);padding:28px;box-shadow:0 35px 100px rgba(0,0,0,.48)}
+.login-logo{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#1b1207;font-weight:1000;font-size:21px;margin-bottom:20px}
+.login-card .eyebrow{color:var(--accent);font-size:9px;font-weight:900;letter-spacing:1.6px;text-transform:uppercase}
+.login-card h1{font-size:26px;margin:7px 0 6px;letter-spacing:-.5px}
+.login-card p{margin:0 0 23px;color:var(--muted);font-size:12px;line-height:1.5}
+.field{margin-bottom:14px}.field label{display:block;margin-bottom:7px;color:#8491a5;font-size:9px;font-weight:900;letter-spacing:1.1px;text-transform:uppercase}
+.field input{width:100%;height:50px;border:1px solid var(--line);border-radius:13px;background:#0d131b;color:#fff;padding:0 14px;outline:none}
+.field input:focus{border-color:#56657e;box-shadow:0 0 0 3px rgba(104,170,255,.07)}
+.btn{min-height:42px;padding:0 13px;border:1px solid var(--line);border-radius:12px;background:#171e29;color:#dce4ee;font-size:11px;font-weight:900;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px}
+.btn:hover{background:#202938;border-color:#3b475c}
+.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border:0;color:#1d1307}
+.btn.red{color:#ff9dab}
+.btn.full{width:100%;height:50px}
+.login-error{min-height:18px;margin-top:10px;color:#ff8d9d;font-size:10px}
+.app{max-width:1280px;margin:auto;padding:27px 23px 105px}
+.header{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:20px}
+.eyebrow{color:var(--accent);font-size:9px;font-weight:900;letter-spacing:1.6px;text-transform:uppercase}
+.header h1{font-size:29px;letter-spacing:-.6px;margin:7px 0 6px}
+.sub{font-size:12px;color:var(--muted)}
+.status{display:inline-flex;align-items:center;gap:7px;margin-top:9px;padding:6px 9px;border:1px solid #263041;border-radius:999px;background:#111822;color:#7f8ca1;font-size:9px;font-weight:900}
+.status .dot{width:7px;height:7px;border-radius:50%;background:#667386}
+.status.online .dot{background:var(--green);box-shadow:0 0 0 4px rgba(69,210,139,.07)}.status.error .dot{background:var(--red)}
+.header-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:13px}
+.stat{border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,#151c27,#101720);padding:14px}
+.stat span{font-size:8px;color:#79869b;letter-spacing:1.1px;text-transform:uppercase}.stat strong{display:block;font-size:23px;margin-top:6px}
+.stat:nth-child(1) strong{color:var(--accent)}.stat:nth-child(2) strong{color:var(--green)}.stat:nth-child(3) strong{color:var(--blue)}
+.panel{border:1px solid var(--line);border-radius:19px;background:linear-gradient(180deg,#141a24,#0f151d);overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.25)}
+.toolbar{display:flex;gap:10px;align-items:center;padding:12px;border-bottom:1px solid #222b39}
+.search-wrap{position:relative;flex:1}.search-wrap svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:17px;color:#657287}
+.search{width:100%;height:44px;border:1px solid var(--line);border-radius:12px;background:#0c121a;color:#fff;padding:0 14px 0 40px;outline:none}
+.search:focus{border-color:#53617a}.meta{font-size:9px;color:#78869a;white-space:nowrap}
+.table-wrap{overflow:auto;max-height:calc(100vh - 305px)}table{width:100%;border-collapse:collapse;min-width:820px}
+th{position:sticky;top:0;z-index:2;background:#151b25;padding:11px 14px;text-align:left;border-bottom:1px solid var(--line);font-size:8px;color:#718097;text-transform:uppercase;letter-spacing:1.1px}
+td{padding:10px 14px;border-bottom:1px solid #202836;font-size:11px}tr:hover td{background:rgba(255,255,255,.018)}
+.idx{width:46px;color:#536176}.code{font-family:Consolas,ui-monospace,monospace;font-weight:900;color:#fff;font-size:12px}.name{color:#c0cad7}
+.thumb{width:58px;height:46px;border-radius:10px;border:1px solid #2d3748;background:#0c1219;display:grid;place-items:center;overflow:hidden;cursor:pointer;color:#657287;padding:0}
+.thumb img{width:100%;height:100%;object-fit:cover}.thumb svg{width:18px;height:18px}.thumb.has{border-color:#3a465a}
+.actions{display:flex;justify-content:flex-end;gap:5px}
+.icon{width:34px;height:34px;border:1px solid transparent;border-radius:9px;background:transparent;color:#7a879a;display:grid;place-items:center;cursor:pointer}
+.icon:hover{border-color:#303b4d;background:#1e2734;color:#fff}.icon.delete:hover{color:#ff8b9b;border-color:rgba(255,104,123,.22);background:rgba(255,104,123,.06)}
+.icon svg{width:15px;height:15px}.empty{padding:50px;text-align:center;color:#758298;font-size:11px}
+.bottom-note{padding:9px 13px;border-top:1px solid #202837;display:flex;justify-content:space-between;gap:12px;color:#617087;font-size:8px}
+.mobile-bar{display:none}
+.modal{display:none;position:fixed;inset:0;z-index:300;background:rgba(3,6,10,.76);backdrop-filter:blur(7px);place-items:center;padding:18px}
+.modal.open{display:grid}.dialog{width:min(500px,100%);border:1px solid #344052;border-radius:21px;background:linear-gradient(180deg,#19212d,#101720);overflow:hidden;box-shadow:0 35px 100px rgba(0,0,0,.55)}
+.dialog.wide{width:min(760px,100%)}.dialog-head{padding:18px 20px 13px;border-bottom:1px solid #252e3d;display:flex;justify-content:space-between;gap:12px}
+.dialog-head h2{margin:0;font-size:17px}.dialog-head p{margin:4px 0 0;color:var(--muted);font-size:9px;line-height:1.45}
+.close{width:32px;height:32px;border:0;border-radius:9px;background:#222b38;color:#8290a4;font-size:20px;cursor:pointer}.dialog-body{padding:18px 20px}
+.dialog-foot{display:flex;justify-content:flex-end;gap:8px;padding:0 20px 19px}.hint{font-size:9px;color:#647287;line-height:1.5;margin-top:6px}
+.sep{height:1px;background:#273040;margin:17px 0}.section-title{font-size:11px;font-weight:900;margin-bottom:11px}
+.image-stage{min-height:300px;border:1px dashed #364256;border-radius:17px;background:#0b1118;display:grid;place-items:center;overflow:hidden;position:relative}
+.image-stage img{max-width:100%;max-height:58vh;object-fit:contain;display:block}.image-empty{text-align:center;color:#718096;font-size:11px;padding:35px}
+.image-empty svg{width:42px;height:42px;margin-bottom:10px;color:#4e5c71}.image-tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.file-input{display:none}.image-info{font-size:9px;color:#68768b;margin-top:8px}.loading{opacity:.55;pointer-events:none}
+.toast{position:fixed;right:20px;bottom:20px;z-index:700;padding:11px 13px;border-radius:12px;background:#171f2b;border:1px solid #344155;color:#dfe7f1;box-shadow:0 18px 55px rgba(0,0,0,.4);font-size:10px;opacity:0;transform:translateY(10px);pointer-events:none;transition:.2s}
+.toast.show{opacity:1;transform:none}.toast.error{border-color:rgba(255,104,123,.38);color:#ffc0ca}
+.user-chip{font-size:9px;color:#99a6b8;align-self:center;padding:0 4px}
+@media(max-width:720px){
+ .app{padding:16px 10px 96px}.header{display:block;margin-bottom:15px}.header h1{font-size:23px}.sub{font-size:10px;line-height:1.45}.header-actions{display:none}
+ .stats{gap:7px}.stat{padding:10px 8px;border-radius:13px}.stat span{font-size:7px;letter-spacing:.7px}.stat strong{font-size:19px;margin-top:4px}
+ .toolbar{padding:9px;flex-wrap:wrap}.search-wrap{flex-basis:100%}.search{height:48px;font-size:16px}.meta{flex:1}
+ .table-wrap{overflow:visible;max-height:none}table{display:block;min-width:0}thead{display:none}tbody{display:block;padding:8px}
+ tr{display:grid;grid-template-columns:64px 1fr auto;grid-template-rows:auto auto;gap:4px 8px;padding:11px;margin-bottom:8px;border:1px solid var(--line);border-radius:14px;background:#111822}
+ td{display:block;border:0;padding:0}td.idx{display:none}td:nth-child(2){grid-column:1;grid-row:1/3;align-self:center}td.code{grid-column:2;grid-row:1;font-size:14px;align-self:end}td.name{grid-column:2;grid-row:2;font-size:11px;line-height:1.35;align-self:start}td:last-child{grid-column:3;grid-row:1/3;align-self:center}
+ .thumb{width:60px;height:56px}.actions{gap:4px}.icon{width:40px;height:40px;border:1px solid #303b4d;background:#19212d;border-radius:11px;color:#c2ccda}.icon:nth-child(1){display:none}.icon svg{width:17px;height:17px}
+ .bottom-note{font-size:7px}.mobile-bar{display:grid;grid-template-columns:1fr 1fr 62px;gap:4px;position:fixed;left:9px;right:9px;bottom:9px;z-index:80;padding:7px;padding-bottom:calc(7px + env(safe-area-inset-bottom));border:1px solid #303a4b;border-radius:18px;background:rgba(17,23,32,.95);backdrop-filter:blur(18px);box-shadow:0 20px 70px rgba(0,0,0,.48)}
+ .mob-action{border:0;background:transparent;min-height:52px;border-radius:11px;color:#b5c0ce;font-size:8px;font-weight:900;display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center}.mob-action svg{width:19px;height:19px}
+ .mob-add{width:54px;height:54px;align-self:center;justify-self:end;border:0;border-radius:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#1a1106;display:grid;place-items:center}.mob-add svg{width:24px;height:24px}
+ .modal{padding:0;align-items:end}.dialog,.dialog.wide{width:100%;border-radius:20px 20px 0 0}.dialog-body{padding:16px}.dialog-head{padding:16px 16px 12px}.dialog-foot{padding:0 16px calc(16px + env(safe-area-inset-bottom))}.dialog-foot .btn{flex:1;min-height:48px}
+ .field input{height:52px;font-size:16px}.image-stage{min-height:260px;border-radius:14px}.image-stage img{max-height:52vh}.image-tools .btn{flex:1}
+ .toast{left:12px;right:12px;bottom:90px;text-align:center}
+}
+</style>
+</head>
+<body>
+
+<div class="login-screen" id="loginScreen">
+  <form class="login-card" id="loginForm">
+    <div class="login-logo">P</div>
+    <div class="eyebrow">Ortak Parça Sistemi</div>
+    <h1>Parça Arşivi</h1>
+    <p>Ortak parça numaralarına, açıklamalara ve görsellere erişmek için giriş yap.</p>
+    <div class="field"><label>Kullanıcı Adı</label><input id="loginUser" autocomplete="username" required value="serdar"></div>
+    <div class="field"><label>Şifre</label><input id="loginPass" type="password" autocomplete="current-password" required></div>
+    <button class="btn primary full" type="submit" id="loginBtn">Giriş Yap</button>
+    <div class="login-error" id="loginError"></div>
+  </form>
+</div>
+
+<div class="app hidden" id="app">
+  <header class="header">
+    <div>
+      <div class="eyebrow">Canlı Ortak Veritabanı</div>
+      <h1>Parça Arşivi</h1>
+      <div class="sub">Parça numaraları, açıklamalar ve görseller tek ortak sistemde.</div>
+      <div class="status" id="status"><span class="dot"></span><span id="statusText">Bağlanıyor</span></div>
+    </div>
+    <div class="header-actions">
+      <span class="user-chip" id="userChip">serdar</span>
+      <button class="btn" id="shareBtn">Bağlantıyı Paylaş</button>
+      <button class="btn" id="exportBtn">TXT İndir</button>
+      <button class="btn" id="settingsBtn">Hesap</button>
+      <button class="btn primary" id="addBtn">+ Yeni Parça</button>
+    </div>
+  </header>
+
+  <section class="stats">
+    <div class="stat"><span>Toplam Kayıt</span><strong id="totalStat">0</strong></div>
+    <div class="stat"><span>Benzersiz Numara</span><strong id="uniqueStat">0</strong></div>
+    <div class="stat"><span>Görselli Parça</span><strong id="imageStat">0</strong></div>
+  </section>
+
+  <section class="panel">
+    <div class="toolbar">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.7-3.7"/></svg>
+        <input class="search" id="search" placeholder="Parça numarası veya parça adı ara..." autocomplete="off">
+      </div>
+      <div class="meta" id="resultMeta">0 kayıt</div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Görsel</th><th>Parça Numarası</th><th>Parça Adı</th><th style="text-align:right">İşlem</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div class="empty" id="empty">Kayıt bulunamadı.</div>
+    </div>
+    <div class="bottom-note"><span>Değişiklikler ortak veritabanına kaydedilir.</span><span id="lastSync">-</span></div>
+  </section>
+</div>
+
+<div class="mobile-bar hidden" id="mobileBar">
+  <button class="mob-action" id="mobShare"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4"/></svg>PAYLAŞ</button>
+  <button class="mob-action" id="mobAccount"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="8" r="4"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/></svg>HESAP</button>
+  <button class="mob-add" id="mobAdd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg></button>
+</div>
+
+<!-- Parça ekle/düzenle -->
+<div class="modal" id="partModal">
+ <div class="dialog">
+  <div class="dialog-head"><div><h2 id="partTitle">Yeni Parça</h2><p>Parça numarası ve açıklamasını kaydet.</p></div><button class="close" data-close="partModal">&times;</button></div>
+  <form id="partForm">
+   <div class="dialog-body">
+    <div class="field"><label>Parça Numarası</label><input id="partNumber" required maxlength="80" placeholder="36.25913-6005"></div>
+    <div class="field"><label>Parça Adı</label><input id="partName" required maxlength="220" placeholder="Trafo"></div>
+    <div class="hint">Görseli kayıt oluşturulduktan sonra satırdaki fotoğraf/kamera alanına basarak ekleyebilirsin.</div>
+   </div>
+   <div class="dialog-foot"><button type="button" class="btn" data-close="partModal">Vazgeç</button><button class="btn primary" type="submit">Kaydet</button></div>
+  </form>
+ </div>
+</div>
+
+<!-- Sil -->
+<div class="modal" id="deleteModal">
+ <div class="dialog">
+  <div class="dialog-head"><div><h2>Parçayı Sil</h2><p id="deleteText"></p></div><button class="close" data-close="deleteModal">&times;</button></div>
+  <div class="dialog-body"><div class="hint">Parçaya bağlı görsel de veritabanından silinecek.</div></div>
+  <div class="dialog-foot"><button class="btn" data-close="deleteModal">Vazgeç</button><button class="btn red" id="confirmDelete">Evet, Sil</button></div>
+ </div>
+</div>
+
+<!-- Görsel -->
+<div class="modal" id="imageModal">
+ <div class="dialog wide">
+  <div class="dialog-head"><div><h2 id="imageTitle">Parça Görseli</h2><p id="imageSubtitle">Görsel ekle veya mevcut görseli değiştir.</p></div><button class="close" data-close="imageModal">&times;</button></div>
+  <div class="dialog-body">
+   <div class="image-stage" id="imageStage">
+    <div class="image-empty" id="imageEmpty">
+     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 15-5-5L5 19"/></svg>
+     <div>Bu parçaya henüz görsel eklenmemiş.</div>
+    </div>
+    <img id="imagePreview" class="hidden" alt="Parça görseli">
+   </div>
+   <input class="file-input" type="file" id="imageFile" accept="image/*">
+   <div class="image-tools">
+    <button class="btn primary" id="chooseImage">Görsel Seç / Değiştir</button>
+    <button class="btn" id="saveImage" disabled>Görseli Kaydet</button>
+    <button class="btn red" id="removeImage">Görseli Sil</button>
+   </div>
+   <div class="image-info" id="imageInfo">JPG, PNG veya telefon fotoğrafı seçebilirsin. Görsel otomatik küçültülür.</div>
+  </div>
+ </div>
+</div>
+
+<!-- Hesap -->
+<div class="modal" id="accountModal">
+ <div class="dialog">
+  <div class="dialog-head"><div><h2>Hesap</h2><p>Oturum ve şifre ayarları.</p></div><button class="close" data-close="accountModal">&times;</button></div>
+  <div class="dialog-body">
+   <div class="section-title">Şifreyi Değiştir</div>
+   <form id="passwordForm">
+    <div class="field"><label>Mevcut Şifre</label><input id="currentPass" type="password" required></div>
+    <div class="field"><label>Yeni Şifre</label><input id="newPass" type="password" minlength="4" required></div>
+    <button class="btn full" type="submit">Şifreyi Değiştir</button>
+   </form>
+   <div class="sep"></div>
+   <button class="btn red full" id="logoutBtn">Çıkış Yap</button>
+  </div>
+ </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL='https://igdwotnempzudjaodkxv.supabase.co';
+const SUPABASE_KEY='sb_publishable_keHF3UmyWVuORp4Xb6zeaw_gBoYOCRU';
+const SESSION_KEY="parca_arsivi_session_v2";
+
+let sessionToken="";
+let currentUser="";
+let parts=[];
+let editingId=null;
+let deletingId=null;
+let imagePartId=null;
+let preparedImage=null;
+let polling=null;
+let refreshing=false;
+
+const $=id=>document.getElementById(id);
+const ICONS={
+ copy:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>`,
+ edit:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m4 20 4.4-1 9.8-9.8a2.1 2.1 0 0 0-3-3L5.4 16z"/><path d="m13.8 7.6 3 3"/></svg>`,
+ del:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13"/><path d="M10 11v5M14 11v5"/></svg>`,
+ camera:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 8h4l1.5-2h5L16 8h4v11H4z"/><circle cx="12" cy="13" r="3"/></svg>`
+};
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function norm(s){return String(s??"").toLocaleLowerCase("tr-TR").trim()}
+function toast(msg,error=false){const t=$("toast");t.textContent=msg;t.className="toast show"+(error?" error":"");clearTimeout(window.__tt);window.__tt=setTimeout(()=>t.className="toast",2400)}
+function setStatus(type,text){$("status").className="status "+type;$("statusText").textContent=text}
+function openModal(id){$(id).classList.add("open")}
+function closeModal(id){$(id).classList.remove("open")}
+function friendlyError(e){
+ const m=String(e?.message||e);
+ if(m.includes("INVALID_LOGIN"))return "Kullanıcı adı veya şifre yanlış.";
+ if(m.includes("INVALID_SESSION"))return "Oturum süresi doldu. Tekrar giriş yap.";
+ if(m.includes("CURRENT_PASSWORD_WRONG"))return "Mevcut şifre yanlış.";
+ if(m.includes("PASSWORD_TOO_SHORT"))return "Yeni şifre en az 4 karakter olmalı.";
+ if(m.includes("duplicate key"))return "Bu parça numarası ve adı zaten kayıtlı.";
+ if(m.includes("IMAGE_TOO_LARGE"))return "Görsel çok büyük. Başka bir görsel dene.";
+ if(m.includes("INVALID_IMAGE"))return "Geçersiz görsel.";
+ if(m.includes("Failed to fetch"))return "Veritabanına ulaşılamadı. İnternet bağlantısını kontrol et.";
+ return m;
+}
+async function rpc(name,payload){
+ const r=await fetch(SUPABASE_URL+"/rest/v1/rpc/"+name,{method:"POST",headers:{"apikey":SUPABASE_KEY,"Content-Type":"application/json"},body:JSON.stringify(payload)});
+ const txt=await r.text();let body=null;try{body=txt?JSON.parse(txt):null}catch{body=txt}
+ if(!r.ok){const err=new Error(body?.message||body?.details||String(body||r.status));err.status=r.status;throw err}
+ return body;
+}
+function extractOne(v){return Array.isArray(v)?(v[0]||null):v}
+
+async function doLogin(username,password){
+ const res=await rpc("app_login",{p_username:username,p_password:password});
+ const row=extractOne(res);
+ if(!row?.session_token)throw new Error("INVALID_LOGIN");
+ sessionToken=row.session_token;currentUser=row.username||username;
+ localStorage.setItem(SESSION_KEY,JSON.stringify({token:sessionToken,user:currentUser}));
+ enterApp();
+ await refresh(false);
+}
+async function restoreSession(){
+ try{
+  const saved=JSON.parse(localStorage.getItem(SESSION_KEY)||"null");
+  if(!saved?.token)return false;
+  const res=await rpc("session_check",{p_session_token:saved.token});
+  const row=extractOne(res);
+  if(!row?.username){localStorage.removeItem(SESSION_KEY);return false}
+  sessionToken=saved.token;currentUser=row.username;enterApp();await refresh(false);return true;
+ }catch{localStorage.removeItem(SESSION_KEY);return false}
+}
+function enterApp(){
+ $("loginScreen").classList.add("hidden");$("app").classList.remove("hidden");$("mobileBar").classList.remove("hidden");$("userChip").textContent=currentUser;
+ if(!polling)polling=setInterval(()=>{if(!document.hidden)refresh(true)},3500);
+}
+function leaveApp(){
+ sessionToken="";currentUser="";parts=[];localStorage.removeItem(SESSION_KEY);
+ $("app").classList.add("hidden");$("mobileBar").classList.add("hidden");$("loginScreen").classList.remove("hidden");$("loginPass").value="";$("loginPass").focus();
+ if(polling){clearInterval(polling);polling=null}
+}
+async function refresh(silent=true){
+ if(!sessionToken||refreshing)return;refreshing=true;if(!silent)setStatus("","Senkronize ediliyor...");
+ try{
+  const res=await rpc("parts_list",{p_session_token:sessionToken});
+  parts=Array.isArray(res)?res:[];
+  render();setStatus("online","Ortak veritabanı bağlı");
+  $("lastSync").textContent="Son senkron: "+new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+ }catch(e){
+  if(String(e.message).includes("INVALID_SESSION")){leaveApp();toast("Oturum süresi doldu.",true)}
+  else{setStatus("error","Bağlantı hatası");if(!silent)toast(friendlyError(e),true)}
+ }finally{refreshing=false}
+}
+function render(){
+ const q=norm($("search").value);
+ const shown=parts.filter(p=>!q||norm(p.part_number).includes(q)||norm(p.part_name).includes(q));
+ $("totalStat").textContent=parts.length;$("uniqueStat").textContent=new Set(parts.map(p=>p.part_number)).size;$("imageStat").textContent=parts.filter(p=>p.has_image).length;
+ $("resultMeta").textContent=shown.length===parts.length?`${parts.length} kayıt`:`${shown.length} / ${parts.length} sonuç`;
+ $("empty").style.display=shown.length?"none":"block";
+ $("tbody").innerHTML=shown.map((p,i)=>`
+ <tr>
+  <td class="idx">${String(i+1).padStart(2,"0")}</td>
+  <td><button class="thumb ${p.has_image?"has":""}" onclick="openImage(${p.id})" title="${p.has_image?"Görseli aç/düzenle":"Görsel ekle"}">${p.thumbnail_data?`<img src="${p.thumbnail_data}" alt="">`:ICONS.camera}</button></td>
+  <td class="code">${esc(p.part_number)}</td>
+  <td class="name">${esc(p.part_name)}</td>
+  <td><div class="actions">
+   <button class="icon" onclick="copyNumber(${p.id})" title="Kopyala">${ICONS.copy}</button>
+   <button class="icon" onclick="editPart(${p.id})" title="Düzenle">${ICONS.edit}</button>
+   <button class="icon delete" onclick="askDelete(${p.id})" title="Sil">${ICONS.del}</button>
+  </div></td>
+ </tr>`).join("");
+}
+async function copyNumber(id){const p=parts.find(x=>x.id===id);if(!p)return;try{await navigator.clipboard.writeText(p.part_number);toast("Parça numarası kopyalandı")}catch{toast(p.part_number)}}
+function addPart(){editingId=null;$("partTitle").textContent="Yeni Parça";$("partForm").reset();openModal("partModal");setTimeout(()=>$("partNumber").focus(),70)}
+function editPart(id){const p=parts.find(x=>x.id===id);if(!p)return;editingId=id;$("partTitle").textContent="Parçayı Düzenle";$("partNumber").value=p.part_number;$("partName").value=p.part_name;openModal("partModal")}
+function askDelete(id){const p=parts.find(x=>x.id===id);if(!p)return;deletingId=id;$("deleteText").textContent=p.part_number+" — "+p.part_name;openModal("deleteModal")}
+
+async function loadImageElement(file){
+ return await new Promise((resolve,reject)=>{const img=new Image();const u=URL.createObjectURL(file);img.onload=()=>{URL.revokeObjectURL(u);resolve(img)};img.onerror=()=>{URL.revokeObjectURL(u);reject(new Error("Görsel okunamadı"))};img.src=u})
+}
+function canvasData(img,maxSide,quality){
+ const scale=Math.min(1,maxSide/Math.max(img.naturalWidth,img.naturalHeight));const w=Math.max(1,Math.round(img.naturalWidth*scale)),h=Math.max(1,Math.round(img.naturalHeight*scale));
+ const c=document.createElement("canvas");c.width=w;c.height=h;const x=c.getContext("2d");x.drawImage(img,0,0,w,h);return c.toDataURL("image/jpeg",quality)
+}
+async function prepareFile(file){
+ const img=await loadImageElement(file);
+ let max=1280,q=.84,full=canvasData(img,max,q);
+ while(full.length>1900000 && (q>.48||max>800)){if(q>.48)q-=.08;else max-=160;full=canvasData(img,max,q)}
+ if(full.length>2150000)throw new Error("IMAGE_TOO_LARGE");
+ const thumb=canvasData(img,220,.72);
+ return {full,thumb,mime:"image/jpeg",name:file.name||"parca.jpg"};
+}
+async function openImage(id){
+ const p=parts.find(x=>x.id===id);if(!p)return;imagePartId=id;preparedImage=null;$("saveImage").disabled=true;
+ $("imageTitle").textContent=p.part_number;$("imageSubtitle").textContent=p.part_name;$("imageInfo").textContent="Görsel yükleniyor...";
+ $("imagePreview").classList.add("hidden");$("imageEmpty").classList.remove("hidden");$("imageFile").value="";openModal("imageModal");
+ if(p.has_image){
+  try{const res=await rpc("part_image_get",{p_id:id,p_session_token:sessionToken});const row=extractOne(res);if(row?.image_data){$("imagePreview").src=row.image_data;$("imagePreview").classList.remove("hidden");$("imageEmpty").classList.add("hidden");$("imageInfo").textContent=(row.image_name||"Görsel")+" • Kayıtlı görsel"}else{$("imageInfo").textContent="Görsel bulunamadı."}}
+  catch(e){$("imageInfo").textContent=friendlyError(e)}
+ }else{$("imageInfo").textContent="Bu parçaya görsel ekleyebilirsin."}
+}
+$("imageFile").addEventListener("change",async e=>{
+ const f=e.target.files?.[0];if(!f)return;
+ $("imageInfo").textContent="Görsel hazırlanıyor...";$("chooseImage").disabled=true;
+ try{preparedImage=await prepareFile(f);$("imagePreview").src=preparedImage.full;$("imagePreview").classList.remove("hidden");$("imageEmpty").classList.add("hidden");$("saveImage").disabled=false;$("imageInfo").textContent=f.name+" • kaydetmeye hazır"}
+ catch(err){preparedImage=null;$("saveImage").disabled=true;toast(friendlyError(err),true);$("imageInfo").textContent="Görsel hazırlanamadı."}
+ finally{$("chooseImage").disabled=false}
+});
+$("chooseImage").onclick=()=>$("imageFile").click();
+$("saveImage").onclick=async()=>{
+ if(!preparedImage||!imagePartId)return;$("saveImage").disabled=true;$("imageModal").classList.add("loading");
+ try{await rpc("part_image_set",{p_id:imagePartId,p_image_data:preparedImage.full,p_thumbnail_data:preparedImage.thumb,p_image_mime:preparedImage.mime,p_image_name:preparedImage.name,p_session_token:sessionToken});toast("Parça görseli kaydedildi");preparedImage=null;await refresh(true);closeModal("imageModal")}
+ catch(e){toast(friendlyError(e),true);$("saveImage").disabled=false}
+ finally{$("imageModal").classList.remove("loading")}
+};
+$("removeImage").onclick=async()=>{
+ const p=parts.find(x=>x.id===imagePartId);if(!p?.has_image){toast("Silinecek görsel yok",true);return}
+ if(!confirm("Bu parça görseli silinsin mi?"))return;
+ try{await rpc("part_image_remove",{p_id:imagePartId,p_session_token:sessionToken});toast("Görsel silindi");closeModal("imageModal");await refresh(true)}catch(e){toast(friendlyError(e),true)}
+};
+
+$("loginForm").addEventListener("submit",async e=>{
+ e.preventDefault();$("loginError").textContent="";$("loginBtn").disabled=true;$("loginBtn").textContent="Giriş yapılıyor...";
+ try{await doLogin($("loginUser").value.trim(),$("loginPass").value)}catch(err){$("loginError").textContent=friendlyError(err)}
+ finally{$("loginBtn").disabled=false;$("loginBtn").textContent="Giriş Yap"}
+});
+$("partForm").addEventListener("submit",async e=>{
+ e.preventDefault();const n=$("partNumber").value.trim(),name=$("partName").value.trim();
+ try{if(editingId){await rpc("part_update",{p_id:editingId,p_number:n,p_name:name,p_session_token:sessionToken});toast("Parça güncellendi")}else{await rpc("part_add",{p_number:n,p_name:name,p_session_token:sessionToken});toast("Yeni parça eklendi")}closeModal("partModal");await refresh(true)}catch(err){toast(friendlyError(err),true)}
+});
+$("confirmDelete").onclick=async()=>{if(!deletingId)return;try{await rpc("part_delete",{p_id:deletingId,p_session_token:sessionToken});closeModal("deleteModal");toast("Parça silindi");await refresh(true)}catch(e){toast(friendlyError(e),true)}};
+$("passwordForm").addEventListener("submit",async e=>{e.preventDefault();try{await rpc("change_password",{p_session_token:sessionToken,p_current_password:$("currentPass").value,p_new_password:$("newPass").value});$("passwordForm").reset();toast("Şifre değiştirildi")}catch(err){toast(friendlyError(err),true)}});
+$("logoutBtn").onclick=async()=>{try{if(sessionToken)await rpc("app_logout",{p_session_token:sessionToken})}catch{}closeModal("accountModal");leaveApp()};
+async function shareSite(){try{if(navigator.share)await navigator.share({title:"Parça Arşivi",url:location.href});else{await navigator.clipboard.writeText(location.href);toast("Bağlantı kopyalandı")}}catch(e){if(e?.name!=="AbortError")toast("Paylaşım açılamadı",true)}}
+function exportTxt(){const t="Parça Numaraları\n\n"+parts.map(p=>`${p.part_number} = ${p.part_name}`).join("\n");const b=new Blob(["\ufeff",t],{type:"text/plain;charset=utf-8"}),u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download="parca-numaralari.txt";a.click();setTimeout(()=>URL.revokeObjectURL(u),500)}
+
+$("search").addEventListener("input",render);$("addBtn").onclick=addPart;$("mobAdd").onclick=addPart;$("shareBtn").onclick=shareSite;$("mobShare").onclick=shareSite;$("exportBtn").onclick=exportTxt;
+function openAccount(){openModal("accountModal")}$("settingsBtn").onclick=openAccount;$("mobAccount").onclick=openAccount;
+document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>closeModal(b.dataset.close));
+document.querySelectorAll(".modal").forEach(m=>m.addEventListener("mousedown",e=>{if(e.target===m)closeModal(m.id)}));
+document.addEventListener("keydown",e=>{if(e.key==="Escape")document.querySelectorAll(".modal.open").forEach(m=>closeModal(m.id))});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&sessionToken)refresh(true)});
+
+(async()=>{const ok=await restoreSession();if(!ok){$("loginScreen").classList.remove("hidden");setTimeout(()=>$("loginPass").focus(),100)}})();
+</script>
+</body>
+</html>
